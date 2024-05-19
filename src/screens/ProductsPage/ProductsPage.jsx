@@ -41,7 +41,7 @@ function ProductsPage() {
   const totalItems = useSelector(selectTotalItems);
 
   useEffect(() => {
-    axios.get('https://domicilios-madriguera-ac104c9fedbe.herokuapp.com/productos')
+    axios.get('https://domicilios-madriguera-ac104c9fedbe.herokuapp.com/productos/disponibles')
       .then(response => {
         setProducts(response.data);
         const uniqueCategories = new Set(response.data.map(product => product.categoria));
