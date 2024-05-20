@@ -49,14 +49,22 @@ function App() {
   useEffect(() => {
     const checkIfOpen = () => {
       const now = new Date();
-      const currentDay = now.toLocaleDateString('es-ES', { weekday: 'long' });
-      const currentTime = now.toTimeString().slice(0, 5);
+      const currentDay = now.toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase();
 
-      const todayHorario = horarios.find(horario => horario.dia.toLowerCase() === currentDay.toLowerCase());
+      const todayHorario = horarios.find(horario => horario.dia.toLowerCase() === currentDay);
       
       if (todayHorario) {
         const { apertura, cierre } = todayHorario;
-        if (apertura <= currentTime && currentTime <= cierre) {
+        
+        // Convertir las horas de apertura y cierre a objetos Date para comparación
+        const [aperturaHoras, aperturaMinutos] = apertura.split(':').map(Number);
+        const [cierreHoras, cierreMinutos] = cierre.split(':').map(Number);
+
+        const aperturaDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), aperturaHoras, aperturaMinutos);
+        const cierreDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), cierreHoras, cierreMinutos);
+        const currentTimeDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+
+        if (aperturaDate <= currentTimeDate && currentTimeDate <= cierreDate) {
           setIsOpen(true);
         } else {
           setIsOpen(false);
