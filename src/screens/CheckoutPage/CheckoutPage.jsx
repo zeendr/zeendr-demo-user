@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Button, TextField, MenuItem, Select, InputLabel, FormControl, Paper, Divider, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, TextField, MenuItem, Select, InputLabel, FormControl, Paper, Divider, CircularProgress, Backdrop } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import deliveryCosts from '../../data/barrios';
 import QRCode from '../../assets/QR2.jpg';
@@ -20,6 +20,7 @@ const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [receipt, setReceipt] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
@@ -47,7 +48,50 @@ const CheckoutPage = () => {
     }).format(value);
   };
 
+  const validateForm = () => {
+    let valid = true;
+    let errors = {};
+
+    if (!name) {
+      valid = false;
+      errors.name = 'El nombre es requerido';
+    }
+    if (!email) {
+      valid = false;
+      errors.email = 'El correo electrónico es requerido';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      valid = false;
+      errors.email = 'El correo electrónico no es válido';
+    }
+    if (!phone) {
+      valid = false;
+      errors.phone = 'El número de teléfono es requerido';
+    } else if (!/^\d{10}$/.test(phone)) {
+      valid = false;
+      errors.phone = 'El número de teléfono debe tener 10 dígitos';
+    }
+    if (!address) {
+      valid = false;
+      errors.address = 'La dirección es requerida';
+    }
+    if (!neighborhood) {
+      valid = false;
+      errors.neighborhood = 'El barrio es requerido';
+    }
+    if (!paymentMethod) {
+      valid = false;
+      errors.paymentMethod = 'El método de pago es requerido';
+    }
+
+    setErrors(errors);
+    return valid;
+  };
+
   const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
     const formData = new FormData();
     formData.append('nombre_completo', name);
@@ -94,26 +138,34 @@ const CheckoutPage = () => {
           variant="outlined"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          error={!!errors.name}
+          helperText={errors.name}
         />
         <TextField
           label="Correo Electrónico"
           variant="outlined"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          error={!!errors.email}
+          helperText={errors.email}
         />
         <TextField
           label="Número de Teléfono"
           variant="outlined"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+          error={!!errors.phone}
+          helperText={errors.phone}
         />
         <TextField
           label="Dirección"
           variant="outlined"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
+          error={!!errors.address}
+          helperText={errors.address}
         />
-        <FormControl variant="outlined">
+        <FormControl variant="outlined" error={!!errors.neighborhood}>
           <InputLabel>Barrio</InputLabel>
           <Select
             value={neighborhood}
@@ -126,8 +178,9 @@ const CheckoutPage = () => {
               </MenuItem>
             ))}
           </Select>
+          {errors.neighborhood && <Typography variant="body2" color="error">{errors.neighborhood}</Typography>}
         </FormControl>
-        <FormControl variant="outlined">
+        <FormControl variant="outlined" error={!!errors.paymentMethod}>
           <InputLabel>Método de Pago</InputLabel>
           <Select
             value={paymentMethod}
@@ -137,6 +190,7 @@ const CheckoutPage = () => {
             <MenuItem value="Efectivo">Efectivo</MenuItem>
             <MenuItem value="Transferencia">Transferencia</MenuItem>
           </Select>
+          {errors.paymentMethod && <Typography variant="body2" color="error">{errors.paymentMethod}</Typography>}
         </FormControl>
         {paymentMethod === 'Transferencia' && (
           <Box sx={{ mt: 2, textAlign: 'center' }}>
@@ -192,7 +246,7 @@ const CheckoutPage = () => {
           variant="contained"
           sx={{ bgcolor: '#FF4D4D', '&:hover': { bgcolor: '#FF6666' }, borderRadius: '16px', mt: 2 }}
           onClick={handleSubmit}
-          disabled={paymentMethod === 'Transferencia' && !receipt} // Deshabilitar si es transferencia y no hay comprobante
+          disabled={isLoading || (paymentMethod === 'Transferencia' && !receipt)} // Deshabilitar si está cargando o si es transferencia y no hay comprobante
         >
           Confirmar Pedido
         </Button>
@@ -203,12 +257,13 @@ const CheckoutPage = () => {
         >
           Sigue Comprando
         </Button>
-        {isLoading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <CircularProgress />
-          </Box>
-        )}
       </Box>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={isLoading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Paper>
   );
 };

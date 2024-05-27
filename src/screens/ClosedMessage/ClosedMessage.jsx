@@ -1,9 +1,8 @@
-// src/components/ClosedMessage/ClosedMessage.jsx
 import React from 'react';
 import { Typography, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import logo from '../../assets/logo2.png'; // Asegúrate de tener el logo de Madriguera en esta ruta
+import logo from '../../assets/logo2.png';
 
 const ClosedMessageContainer = styled(Box)({
   display: 'flex',
@@ -11,7 +10,7 @@ const ClosedMessageContainer = styled(Box)({
   alignItems: 'center',
   justifyContent: 'center',
   height: '100vh',
-  backgroundColor: '#f4f1ea', // Fondo más claro
+  backgroundColor: '#f4f1ea',
   textAlign: 'center',
   padding: '40px',
   borderRadius: '10px',
@@ -19,14 +18,14 @@ const ClosedMessageContainer = styled(Box)({
 });
 
 const StyledTypography = styled(Typography)({
-  color: '#444', // Texto más oscuro para buen contraste
+  color: '#444',
   marginBottom: '16px',
   fontFamily: 'Poppins, Arial, sans-serif',
 });
 
 const LogoImage = styled('img')({
-  width: '180px', // Aumentar el tamaño del logo
-  marginBottom: '30px', // Aumentar el espacio inferior
+  width: '180px',
+  marginBottom: '30px',
 });
 
 const ClosedMessage = ({ horarios }) => {
@@ -38,6 +37,12 @@ const ClosedMessage = ({ horarios }) => {
     const formattedTime = `${formattedHour}:${minute} ${isPM ? 'PM' : 'AM'}`;
     return formattedTime;
   };
+
+  const diasOrden = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
+
+  const horariosOrdenados = horarios.sort((a, b) => {
+    return diasOrden.indexOf(a.dia.toLowerCase()) - diasOrden.indexOf(b.dia.toLowerCase());
+  });
 
   return (
     <ClosedMessageContainer>
@@ -55,9 +60,9 @@ const ClosedMessage = ({ horarios }) => {
         Nuestros horarios de atención para domicilios son:
       </StyledTypography>
       <Box>
-        {horarios.map((horario) => (
+        {horariosOrdenados.map((horario) => (
           <StyledTypography key={horario.dia} variant="body2">
-            {`${horario.dia}: ${formatTime(horario.apertura)} - ${formatTime(horario.cierre)}`}
+            {`${horario.dia.charAt(0).toUpperCase() + horario.dia.slice(1)}: ${formatTime(horario.apertura)} - ${formatTime(horario.cierre)}`}
           </StyledTypography>
         ))}
       </Box>
